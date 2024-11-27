@@ -13,7 +13,9 @@
             {
                 "target_screen": "map",
                 "actions_list": [
-                    "auto.press_key('m')"
+                    "auto.press_key('m')",
+                    "time.sleep(2)",
+                    "auto.click_element('./assets/images/zh_CN/map/back.png', 'image', 0.9)"
                 ]
             },
             {
@@ -65,6 +67,15 @@
                 ]
             },
             {
+                "target_screen": "guide5",
+                "actions_list": [
+                    "auto.click_element('./assets/images/share/menu/guide.png', 'image', 2000000, crop=(1264.0 / 1920, 286.0 / 1080, 546.0 / 1920, 746.0 / 1080))",
+                    "time.sleep(2)",
+                    "auto.click_element('./assets/images/screen/guide/enter_guide5.png', 'image', 0.9)",
+                    "time.sleep(1)"
+                ]
+            },
+            {
                 "target_screen": "mail",
                 "actions_list": [
                     "auto.click_element('./assets/images/share/menu/mail.png', 'image', 0.8, crop=(0.95, 0.1, 0.05, 0.6))",
@@ -77,6 +88,14 @@
                     "auto.click_element('./assets/images/share/menu/more.png', 'image', 0.9)",
                     "time.sleep(2)",
                     "auto.click_element('漫游签证', 'text', None, 2, crop=(1261.0 / 1920, 1.0 / 1080, 552.0 / 1920, 346.0 / 1080))"
+                ]
+            },
+            {
+                "target_screen": "redemption",
+                "actions_list": [
+                    "auto.click_element('./assets/images/share/menu/more.png', 'image', 0.9)",
+                    "time.sleep(2)",
+                    "auto.click_element('兑换码', 'text', None, 2, crop=(1261.0 / 1920, 1.0 / 1080, 552.0 / 1920, 346.0 / 1080))"
                 ]
             },
             {
@@ -296,6 +315,12 @@
                 "actions_list": [
                     "auto.click_element('./assets/images/screen/guide/enter_guide4.png', 'image', 0.9)"
                 ]
+            },
+            {
+                "target_screen": "guide5",
+                "actions_list": [
+                    "auto.click_element('./assets/images/screen/guide/enter_guide5.png', 'image', 0.9)"
+                ]
             }
         ]
     },
@@ -323,9 +348,9 @@
                 ]
             },
             {
-                "target_screen": "universe_main",
+                "target_screen": "guide5",
                 "actions_list": [
-                    "auto.click_element('传送', 'min_distance_text', crop=(691.0 / 1920, 291.0 / 1080, 968.0 / 1920, 374.0 / 1080), include=True, source=\"积分奖励\", source_type=\"text\")"
+                    "auto.click_element('./assets/images/screen/guide/enter_guide5.png', 'image', 0.9)"
                 ]
             }
         ]
@@ -354,6 +379,12 @@
                 ]
             },
             {
+                "target_screen": "guide5",
+                "actions_list": [
+                    "auto.click_element('./assets/images/screen/guide/enter_guide5.png', 'image', 0.9)"
+                ]
+            },
+            {
                 "target_screen": "memory_of_chaos",
                 "actions_list": [
                     "auto.click_element('忘却之庭', 'text', None, 10, crop=(231.0 / 1920, 420.0 / 1080, 450.0 / 1920, 536.0 / 1080))",
@@ -367,6 +398,56 @@
                     "auto.click_element('虚构叙事', 'text', None, 10, crop=(231.0 / 1920, 420.0 / 1080, 450.0 / 1920, 536.0 / 1080))",
                     "time.sleep(1)",
                     "auto.click_element('传送', 'text', None, 10, crop=(689.0 / 1920, 285.0 / 1080, 970.0 / 1920, 474.0 / 1080))"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "星际和平指南-模拟宇宙",
+        "id": "guide5",
+        "image_path": "./assets/images/screen/guide/guide5.png",
+        "actions": [
+            {
+                "target_screen": "menu",
+                "actions_list": [
+                    "auto.press_key('esc')"
+                ]
+            },
+            {
+                "target_screen": "guide2",
+                "actions_list": [
+                    "auto.click_element('./assets/images/screen/guide/enter_guide2.png', 'image', 0.9)"
+                ]
+            },
+            {
+                "target_screen": "guide3",
+                "actions_list": [
+                    "auto.click_element('./assets/images/screen/guide/enter_guide3.png', 'image', 0.9)"
+                ]
+            },
+            {
+                "target_screen": "guide4",
+                "actions_list": [
+                    "auto.click_element('./assets/images/screen/guide/enter_guide4.png', 'image', 0.9)"
+                ]
+            },
+            {
+                "target_screen": "universe_main",
+                "actions_list": [
+                    "auto.click_element('模拟宇宙', 'text', None, 10, crop=(238.0 / 1920, 257.0 / 1080, 449.0 / 1920, 525.0 / 1080))",
+                    "time.sleep(1)",
+                    "auto.click_element('传送', 'text', None, 10, crop=(684.0 / 1920, 278.0 / 1080, 981.0 / 1920, 656.0 / 1080), action=\"move\")",
+                    "auto.mouse_scroll(30, -1, False)",
+                    "time.sleep(1)",
+                    "auto.click_element('传送', 'min_distance_text', crop=(684.0 / 1920, 278.0 / 1080, 981.0 / 1920, 656.0 / 1080), include=True, source=\"模拟宇宙\", source_type=\"text\")"
+                ]
+            },
+            {
+                "target_screen": "divergent_main",
+                "actions_list": [
+                    "auto.click_element('差分宇宙', 'text', None, 10, crop=(238.0 / 1920, 257.0 / 1080, 449.0 / 1920, 525.0 / 1080))",
+                    "time.sleep(1)",
+                    "auto.click_element('前往参与', 'text', None, 10, crop=(684.0 / 1920, 278.0 / 1080, 981.0 / 1920, 656.0 / 1080))"
                 ]
             }
         ]
@@ -388,6 +469,19 @@
         "name": "漫游签证",
         "id": "visa",
         "image_path": "./assets/images/screen/visa.png",
+        "actions": [
+            {
+                "target_screen": "menu",
+                "actions_list": [
+                    "auto.press_key('esc')"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "兑换码",
+        "id": "redemption",
+        "image_path": "./assets/images/screen/redemption.png",
         "actions": [
             {
                 "target_screen": "menu",
@@ -457,6 +551,19 @@
                 "target_screen": "universe_main",
                 "actions_list": [
                     "auto.click_element('./assets/images/screen/universe/switch.png', 'image', 0.9, 10)"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "差分宇宙-主界面",
+        "id": "divergent_main",
+        "image_path": "./assets/images/screen/universe/divergent_main.png",
+        "actions": [
+            {
+                "target_screen": "main",
+                "actions_list": [
+                    "auto.press_key('esc')"
                 ]
             }
         ]

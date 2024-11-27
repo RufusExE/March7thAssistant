@@ -1,5 +1,78 @@
 # 更新日志
 
+## v2.7.0
+
+### 新功能
+- 支持 “灵砂”
+- 支持开机后自动运行（设置——杂项）
+- 循环模式每次启动前会重新加载配置文件
+
+### 修复
+- “日常任务” 会在每次启动时被错误清空
+- 降低角色头像匹配阈值 [#356](https://github.com/moesnow/March7thAssistant/issues/356)
+
+## v2.6.3
+
+### 新功能
+- 支持 2.6 版本新增关卡和角色（乱破）
+- “副本名称” 配置项支持手动输入
+- 阵亡导致挑战失败后支持自动重试 [#385](https://github.com/moesnow/March7thAssistant/pull/385)
+- 支持自动批量使用兑换码（工具箱）
+- “抽卡记录” 支持 “更新完整数据”（用于修复错误的抽卡数据）
+- 循环模式支持 “根据开拓力”（原有模式） 和 “定时任务”（指定时间）
+- 支持 “Server酱3” 推送方式 [#377](https://github.com/moesnow/March7thAssistant/pull/377)
+
+### 修复
+- 更换抽卡记录 API
+- 手动修改配置文件会被图形界面覆盖 [#341](https://github.com/moesnow/March7thAssistant/issues/341) [#379](https://github.com/moesnow/March7thAssistant/issues/379)
+- 游戏窗口位于多显示器副屏时截图内容全黑或坐标偏移 [#378](https://github.com/moesnow/March7thAssistant/pull/378) [#384](https://github.com/moesnow/March7thAssistant/pull/384)
+- 暗黑主题下首次启动程序后账号列表背景色异常
+- 存在“花藏繁生”活动但未启用的情况下进入死循环
+
+## v2.5.4
+
+### 新功能
+- 支持 2.5 版本新增关卡
+- 支援功能重做（支持指定好友的指定角色且支持饰品提取使用，需重新配置）
+- 支持 “翡翠” 、 “椒丘” 、“飞霄” 、 “貊泽”
+- 支持B服启动后自动点击 “登录” [#321](https://github.com/moesnow/March7thAssistant/discussions/321)
+- “任务完成后” 新增 “重启” 选项
+
+### 修复
+- 部分文字 OCR 识别异常
+- 自动登录检测异常 [#336](https://github.com/moesnow/March7thAssistant/issues/336)
+- 支援功能在高分屏下异常 [#329](https://github.com/moesnow/March7thAssistant/issues/329)
+- 修复拟造花萼（赤）错行 [#328](https://github.com/moesnow/March7thAssistant/issues/328)
+- 延长逐光捡金等待场景加载的时间 [#322](https://github.com/moesnow/March7thAssistant/issues/322)
+- 优化饰品提取开始挑战的逻辑 [#325](https://github.com/moesnow/March7thAssistant/issues/325)
+- 优化 “启动失败” 的报错提示
+
+## v2.4.0
+
+### 新功能
+- 支持差分宇宙和饰品提取
+- 支持 “智识之蕾•匹诺康尼大剧院” 关卡
+- 支持 “云璃” 、 “三月七（虚数）” 、 “开拓者（虚数）”
+- 飞书 支持发送截图 [#310](https://github.com/moesnow/March7thAssistant/pull/310)
+
+### 修复
+- 新版材料合成页面卡住的问题 [#231](https://github.com/moesnow/March7thAssistant/issues/231)
+
+## v2.3.0
+
+### 新功能
+- 适配模拟宇宙新入口（需先解锁差分宇宙）
+- 支持 2.3 版本新增关卡 [#277](https://github.com/moesnow/March7thAssistant/pull/277)
+- 支持B服 [#269](https://github.com/moesnow/March7thAssistant/pull/269)
+- 支持国际服账号操作 [#268](https://github.com/moesnow/March7thAssistant/pull/268)
+- 支持逐光捡金和支援角色选择 “流萤”
+- 支持判断米哈游启动器默认安装路径
+
+### 修复
+- 支持位于城市沙盘时正确进入地图界面
+- 混沌回忆刷新后的弹窗有概率导致失败
+- PAC错误 [#276](https://github.com/moesnow/March7thAssistant/pull/276)
+
 ## v2.2.0
 
 ### 新功能
@@ -10,10 +83,14 @@
 - 设置内新增多账户管理功能 [#224](https://github.com/moesnow/March7thAssistant/pull/224)
 - 支持登录过期时尝试自动登录 [#237](https://github.com/moesnow/March7thAssistant/pull/237)
 - 默认将模板图片缓存到内存中 [#244](https://github.com/moesnow/March7thAssistant/pull/244)
+- 抽卡记录新增 “清空” 按钮
+- 适配支援角色界面的新样式
 
 ### 修复
 - 无法切换到 “漫游签证” 和 “委托” 界面 [#247](https://github.com/moesnow/March7thAssistant/pull/247)
 - 最新一期虚构叙事中部分角色开怪失败 [#242](https://github.com/moesnow/March7thAssistant/pull/242)
+- 无法领取 “支援” 和 “巡星之礼” 奖励
+- 特殊情况下抽卡记录无法正常显示和闪退
 
 ## v2.1.1
 

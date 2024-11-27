@@ -13,10 +13,10 @@ class ActivityTemplate(ABC):
     def start(self):
         if not self.enabled:
             log.info(f"{self.name}未开启")
-            return
+            return True
 
         self.prepare()
-        self.run()
+        return self.run()
 
     def prepare(self):
         screen.change_to('activity')

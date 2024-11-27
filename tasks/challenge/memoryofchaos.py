@@ -40,6 +40,10 @@ class MemoryOfChaos(BaseChallenge):
         if not auto.click_element("传送", "text", max_retries=10, need_ocr=False):
             return False
 
+        time.sleep(4)
+        screen.change_to('memory_of_chaos')
+
+        # 等待刷新后首次打开可能会出现的弹窗过程
         time.sleep(2)
         screen.change_to('memory_of_chaos')
 
@@ -50,7 +54,7 @@ class MemoryOfChaos(BaseChallenge):
 
     def start_challenges(self):
         '''查找关卡并判断星数'''
-        auto.mouse_scroll(20, 1)
+        auto.mouse_scroll(20, 1, False)
         time.sleep(2)
         for level in range(self.level_range[0], self.level_range[1] + 1):
             # 查找关卡
@@ -69,7 +73,7 @@ class MemoryOfChaos(BaseChallenge):
                 log.error(f"第{level}层挑战失败")
                 break
 
-            time.sleep(2)
+            time.sleep(6)
             screen.wait_for_screen_change('memory_of_chaos')
 
     def find_level(self, level, max_retries=4):
@@ -209,7 +213,7 @@ class MemoryOfChaos(BaseChallenge):
                 for crop in crop_list:
                     text = auto.get_single_line_text(crop=crop)
                     # 角色无法战斗
-                    if text and text[0] == '0':
+                    if text == '0':
                         log.info("检测到角色无法战斗")
                         auto.press_key("esc")
                         break

@@ -94,23 +94,26 @@ class WarpExport:
                     rank_5.append([name, grand_total])
                     grand_total = 0
 
-            content += f"一共 {self.__set_color(total,'DeepSkyBlue')} 抽 已累计 {self.__set_color(grand_total,'LimeGreen')} 抽未出5星\n\n"
+            content += f"一共 {self.__set_color(total, 'DeepSkyBlue')} 抽 已累计 {self.__set_color(grand_total, 'LimeGreen')} 抽未出5星\n\n"
             for star, count in rank_type.items():
                 percentage = count / total * 100
                 color = 'Goldenrod' if star == '5' else 'darkorchid' if star == '4' else 'DodgerBlue'
                 text = f"{star}星: {count:<4d} [{percentage:.2f}%]"
                 content += f"{self.__set_color(text, color)}\n\n"
-            rank_5_str = ' '.join([f"{self.__set_color(f'{key}[{value}]', self.__get_random_color(theme))}" for key, value in rank_5])
-            rank_5_sum = sum(value for _, value in rank_5)
-            rank_5_avg = rank_5_sum / len(rank_5)
-            content += f"5星历史记录: {rank_5_str}\n\n"
-            content += f"五星平均出货次数为: {self.__set_color(f'{rank_5_avg:.2f}', 'green')}\n\n<hr>"
+            if len(rank_5) > 0:
+                rank_5_str = ' '.join([f"{self.__set_color(f'{key}[{value}]', self.__get_random_color(theme))}" for key, value in rank_5])
+                rank_5_sum = sum(value for _, value in rank_5)
+                rank_5_avg = rank_5_sum / len(rank_5)
+                content += f"5星历史记录: {rank_5_str}\n\n"
+                content += f"五星平均出货次数为: {self.__set_color(f'{rank_5_avg:.2f}', 'green')}\n\n<hr>"
+            else:
+                content += "<hr>"
 
             return content
 
         for type, list in self.gacha_data.items():
             if len(list) > 0:
-                content += f"## {self.__set_color(self.gacha_type[type],'#f18cb9')}\n\n"
+                content += f"## {self.__set_color(self.gacha_type[type], '#f18cb9')}\n\n"
                 content = warp_analyze(list, content)
         return css + markdown.markdown(content)
 
@@ -121,7 +124,7 @@ class WarpExport:
             log_file_path = os.path.join(os.getenv('userprofile'), f"AppData/LocalLow{str}Player.log")
             if not os.path.exists(log_file_path):
                 continue
-            
+
             try:
                 with open(log_file_path, 'r', encoding='utf-8') as file:
                     log_content = file.read()
@@ -179,9 +182,9 @@ class WarpExport:
 
         host = parsed_url.netloc
         if 'webstatic-sea' in host or 'hkrpg-api-os' in host or 'api-os-takumi' in host or 'hoyoverse.com' in host:
-            apiDomain = 'https://api-os-takumi.mihoyo.com'
+            apiDomain = 'https://public-operation-hkrpg-sg.hoyoverse.com'
         else:
-            apiDomain = 'https://api-takumi.mihoyo.com'
+            apiDomain = 'https://public-operation-hkrpg.mihoyo.com'
 
         # 删除指定的参数
         for param in params_to_remove:
@@ -246,8 +249,8 @@ class WarpExport:
 
         return True
 
-    def get_gacha_logs(self, api_domain, gacha_type, updated_query):
-        if len(self.gacha_data[gacha_type]) > 0:
+    def get_gacha_logs(self, api_domain, gacha_type, updated_query, type="normal"):
+        if type == "normal" and len(self.gacha_data[gacha_type]) > 0:
             last_id = self.gacha_data[gacha_type][-1]['id']
         else:
             last_id = "0"
@@ -285,13 +288,30 @@ class WarpExport:
             page += 1
             end_id = list[-1]['id']
 
-    def fetch_data(self, api_domain, updated_query):
-        for type in self.gacha_type:
-            gacha_list = self.get_gacha_logs(api_domain, type, updated_query)
+    def fetch_data(self, api_domain, updated_query, type="normal"):
+        for gtype in self.gacha_type:
+            gacha_list = self.get_gacha_logs(api_domain, gtype, updated_query, type)
             if gacha_list is None:
                 return False
             else:
-                self.gacha_data[type] += gacha_list
+                if gacha_list == []:
+                    continue
+                elif type == "normal":
+                    self.gacha_data[gtype] += gacha_list
+                else:
+                    last_id = gacha_list[0]['id']
+
+                    # 裁剪错误数据，使用二分查找
+                    from bisect import bisect_left
+                    # 获取所有 ID 列表
+                    ids = [entry["id"] for entry in self.gacha_data[gtype]]
+                    # 找到第一个 >= last_id 的位置
+                    index = bisect_left(ids, last_id)
+                    # 保留 ID 小于 last_id 的部分
+                    self.gacha_data[gtype] = self.gacha_data[gtype][:index]
+
+                    self.gacha_data[gtype] += gacha_list
+
         self.info['export_timestamp'] = int(time.time())
         self.info['export_app'] = "March7thAssistant"
         try:
@@ -319,16 +339,18 @@ class WarpExport:
 
 class WarpStatus(Enum):
     SUCCESS = 1
-    UPDATE_AVAILABLE = 2
     FAILURE = 0
+    UPDATE = 2
+    COPY = 3
 
 
 class WarpThread(QThread):
     warpSignal = pyqtSignal(WarpStatus)
 
-    def __init__(self, parent):
+    def __init__(self, parent, type="normal"):
         super().__init__()
         self.parent = parent
+        self.type = type
 
     def run(self):
         try:
@@ -349,7 +371,7 @@ class WarpThread(QThread):
 
             api_domain, updated_query = warp.remove_query_params(url)
 
-            if warp.fetch_data(api_domain, updated_query):
+            if warp.fetch_data(api_domain, updated_query, self.type):
                 self.parent.warplink = warp.warplink
                 config = warp.export_data()
 
@@ -358,9 +380,12 @@ class WarpThread(QThread):
 
                 # content = warp.data_to_html()
                 # self.parent.contentLabel.setText(markdown.markdown(content))
-                self.parent.setContent()
 
-                self.parent.copyLinkBtn.setEnabled(True)
+                # self.parent.setContent()
+                self.warpSignal.emit(WarpStatus.UPDATE)
+
+                # self.parent.copyLinkBtn.setEnabled(True)
+                self.warpSignal.emit(WarpStatus.COPY)
                 self.warpSignal.emit(WarpStatus.SUCCESS)
             else:
                 self.warpSignal.emit(WarpStatus.FAILURE)
@@ -369,12 +394,13 @@ class WarpThread(QThread):
             self.warpSignal.emit(WarpStatus.FAILURE)
 
 
-def warpExport(self):
+def warpExport(self, type="normal"):
     self.stateTooltip = StateToolTip("抽卡记录", "正在获取跃迁数据...", self.window())
     self.stateTooltip.closeButton.setVisible(False)
     self.stateTooltip.move(self.stateTooltip.getSuitablePos())
     self.stateTooltip.show()
     self.updateBtn.setEnabled(False)
+    self.updateFullBtn.setEnabled(False)
 
     def handle_warp(status):
         if status == WarpStatus.SUCCESS:
@@ -382,12 +408,18 @@ def warpExport(self):
             self.stateTooltip.setState(True)
             self.stateTooltip = None
             self.updateBtn.setEnabled(True)
+            self.updateFullBtn.setEnabled(True)
         elif status == WarpStatus.FAILURE:
             # self.stateTooltip.setContent("跃迁数据获取失败(´▔∀▔`)")
             self.stateTooltip.setState(True)
             self.stateTooltip = None
             self.updateBtn.setEnabled(True)
+            self.updateFullBtn.setEnabled(True)
+        elif status == WarpStatus.UPDATE:
+            self.setContent()
+        elif status == WarpStatus.COPY:
+            self.copyLinkBtn.setEnabled(True)
 
-    self.warp_thread = WarpThread(self)
+    self.warp_thread = WarpThread(self, type)
     self.warp_thread.warpSignal.connect(handle_warp)
     self.warp_thread.start()

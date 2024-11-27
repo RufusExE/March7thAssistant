@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import psutil
-import random
 
 
 from app.tools.account_manager import load_acc_and_pwd
@@ -50,6 +49,10 @@ def start_game():
         auto.click_element("./assets/images/zh_CN/base/restart.png", "image", 0.9, take_screenshot=False)
         # 适配国际服，需要点击“开始游戏”
         auto.click_element("./assets/images/screen/start_game.png", "image", 0.9, take_screenshot=False)
+        # 适配B服，需要点击“登录”
+        auto.click_element("./assets/images/screen/bilibili_login.png", "image", 0.9, take_screenshot=False)
+        # 适配用户协议和隐私政策更新提示，需要点击“同意”
+        auto.click_element("./assets/images/screen/agree_update.png", "image", 0.9, take_screenshot=False)
         # 登录过期
         if auto.find_element("./assets/images/screen/account_and_password.png", "image", 0.9, take_screenshot=False):
             if load_acc_and_pwd(gamereg_uid()) != (None, None):
@@ -91,6 +94,8 @@ def start_game():
                 if not wait_until(lambda: check_and_click_enter(), 600):
                     raise TimeoutError("查找并点击进入按钮超时")
                 time.sleep(10)
+                # 修复B服问题 https://github.com/moesnow/March7thAssistant/discussions/321#discussioncomment-10565807
+                auto.press_mouse()
             else:
                 starrail.check_resolution_ratio(1920, 1080)
                 if cfg.auto_set_game_path_enable:
@@ -139,10 +144,10 @@ def stop(detect_loop=False):
     else:
         if detect_loop:
             notify_after_finish_not_loop()
-        if cfg.after_finish in ["Exit", "Loop", "Shutdown", "Hibernate", "Sleep", "Logoff"]:
+        if cfg.after_finish in ["Exit", "Loop", "Shutdown", "Sleep", "Hibernate", "Restart", "Logoff"]:
             starrail.shutdown(cfg.after_finish)
         log.hr("完成", 2)
-        if cfg.after_finish not in ["Shutdown", "Hibernate", "Sleep", "Logoff"]:
+        if cfg.after_finish not in ["Shutdown", "Sleep", "Hibernate", "Restart", "Logoff"]:
             input("按回车键关闭窗口. . .")
         sys.exit(0)
 
@@ -153,26 +158,37 @@ def after_finish_is_loop():
         # 距离体力到达配置文件指定的上限剩余秒数
         wait_time_power_limit = (cfg.power_limit - current_power) * 6 * 60
         # 距离第二天凌晨4点剩余秒数，+30避免显示3点59分不美观，#7
-        wait_time_next_day = Date.get_time_next_x_am(cfg.refresh_hour) + random.randint(30, 600)
+        wait_time_next_day = Date.get_time_next_x_am(cfg.refresh_hour) + 30
         # 取最小值
         wait_time = min(wait_time_power_limit, wait_time_next_day)
         return wait_time
 
-    current_power = Power.get()
-    if current_power >= cfg.power_limit:
-        log.info(f"🟣开拓力 >= {cfg.power_limit}")
-        log.info("即将再次运行")
-        log.hr("完成", 2)
+    if cfg.loop_mode == "power":
+        current_power = Power.get()
+        if current_power >= cfg.power_limit:
+            log.info(f"🟣开拓力 >= {cfg.power_limit}")
+            log.info("即将再次运行")
+            log.hr("完成", 2)
+            return
+        else:
+            starrail.stop_game()
+            wait_time = get_wait_time(current_power)
+            future_time = Date.calculate_future_time(wait_time)
     else:
         starrail.stop_game()
-        wait_time = get_wait_time(current_power)
-        future_time = Date.calculate_future_time(wait_time)
-        log.info(cfg.notify_template['ContinueTime'].format(time=future_time))
-        notif.notify(cfg.notify_template['ContinueTime'].format(time=future_time))
-        log.hr("完成", 2)
-        # 等待状态退出OCR避免内存占用
-        ocr.exit_ocr()
-        time.sleep(wait_time)
+        scheduled_time = cfg.scheduled_time
+        wait_time = Date.time_to_seconds(scheduled_time)
+        future_time = Date.calculate_future_time(scheduled_time)
+
+    log.info(cfg.notify_template['ContinueTime'].format(time=future_time))
+    notif.notify(cfg.notify_template['ContinueTime'].format(time=future_time))
+    log.hr("完成", 2)
+    # 等待状态退出OCR避免内存占用
+    ocr.exit_ocr()
+    time.sleep(wait_time)
+
+    # 启动前重新加载配置 #262
+    cfg._load_config()
 
 
 def notify_after_finish_not_loop():

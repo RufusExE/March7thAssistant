@@ -29,11 +29,12 @@ from tasks.daily.daily import Daily
 from tasks.daily.fight import Fight
 from tasks.power.power import Power
 from tasks.weekly.universe import Universe
+from tasks.daily.redemption import Redemption
 
 
 def first_run():
     if not cfg.get_value(base64.b64decode("YXV0b191cGRhdGU=").decode("utf-8")):
-        log.error("首次使用请先打开图形界面")
+        log.error("首次使用请先打开图形界面 March7th Launcher.exe")
         input("按回车键关闭窗口. . .")
         sys.exit(0)
 
@@ -56,7 +57,8 @@ def run_sub_task(action):
         "fight": Fight.start,
         "universe": Universe.start,
         "forgottenhall": lambda: challenge.start("memoryofchaos"),
-        "purefiction": lambda: challenge.start("purefiction")
+        "purefiction": lambda: challenge.start("purefiction"),
+        "redemption": Redemption.start
     }
     task = sub_tasks.get(action)
     if task:
@@ -101,7 +103,7 @@ def main(action=None):
         run_main_actions()
 
     # 子任务
-    elif action in ["daily", "power", "fight", "universe", "forgottenhall", "purefiction"]:
+    elif action in ["daily", "power", "fight", "universe", "forgottenhall", "purefiction", "redemption"]:
         run_sub_task(action)
 
     # 子任务 原生图形界面

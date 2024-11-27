@@ -7,9 +7,10 @@ from app.sub_interfaces.accounts_interface import accounts_interface
 from .common.style_sheet import StyleSheet
 from .card.comboboxsettingcard1 import ComboBoxSettingCard1
 from .card.comboboxsettingcard2 import ComboBoxSettingCard2, ComboBoxSettingCardLog
-from .card.switchsettingcard1 import SwitchSettingCard1, SwitchSettingCardTeam, SwitchSettingCardImmersifier, SwitchSettingCardGardenofplenty
+from .card.switchsettingcard1 import SwitchSettingCard1, StartMarch7thAssistantSwitchSettingCard, SwitchSettingCardTeam, SwitchSettingCardImmersifier, SwitchSettingCardGardenofplenty
 from .card.rangesettingcard1 import RangeSettingCard1
-from .card.pushsettingcard1 import PushSettingCardInstance, PushSettingCardNotifyTemplate, PushSettingCardEval, PushSettingCardDate, PushSettingCardKey, PushSettingCardTeam
+from .card.pushsettingcard1 import PushSettingCardInstance, PushSettingCardNotifyTemplate, PushSettingCardEval, PushSettingCardDate, PushSettingCardKey, PushSettingCardTeam, PushSettingCardFriends
+from .card.timepickersettingcard1 import TimePickerSettingCard1
 from module.config import cfg
 from tasks.base.tasks import start_task
 from .tools.check_update import checkUpdate
@@ -51,15 +52,15 @@ class SettingInterface(ScrollArea):
             FIF.ALIGNMENT,
             self.tr('副本类型'),
             None,
-            texts=['拟造花萼（金）', '拟造花萼（赤）', '凝滞虚影', '侵蚀隧洞']
+            texts=['拟造花萼（金）', '拟造花萼（赤）', '凝滞虚影', '侵蚀隧洞', '饰品提取']
         )
-        self.calyxGoldenPreferenceCard = ComboBoxSettingCard2(
-            "calyx_golden_preference",
-            FIF.PIE_SINGLE,
-            self.tr('拟造花萼（金）偏好地区'),
-            '',
-            texts={'雅利洛-VI': 'Jarilo-VI', '仙舟「罗浮」': 'XianzhouLuofu', '匹诺康尼': 'Penacony'}
-        )
+        # self.calyxGoldenPreferenceCard = ComboBoxSettingCard2(
+        #     "calyx_golden_preference",
+        #     FIF.PIE_SINGLE,
+        #     self.tr('拟造花萼（金）偏好地区'),
+        #     '',
+        #     texts={'雅利洛-VI': 'Jarilo-VI', '仙舟「罗浮」': 'XianzhouLuofu', '匹诺康尼': 'Penacony'}
+        # )
         self.instanceNameCard = PushSettingCardInstance(
             self.tr('修改'),
             FIF.PALETTE,
@@ -70,7 +71,7 @@ class SettingInterface(ScrollArea):
         self.breakDownLevelFourRelicsetEnableCard = SwitchSettingCard1(
             FIF.FILTER,
             self.tr('自动分解四星遗器'),
-            self.tr('侵蚀隧洞、历战余响和模拟宇宙（开启领取沉浸奖励）完成后自动分解四星及以下遗器'),
+            self.tr('侵蚀隧洞、饰品提取、历战余响和模拟宇宙完成后自动分解四星及以下遗器'),
             "break_down_level_four_relicset"
         )
         self.instanceTeamEnableCard = SwitchSettingCardTeam(
@@ -131,24 +132,37 @@ class SettingInterface(ScrollArea):
             self.tr('无论何时都要使用支援角色，即使日常实训中没有要求'),
             "borrow_character_enable"
         )
-        self.borrowCharacterFromCard = PushSettingCardEval(
+        self.borrowFriendsCard = PushSettingCardFriends(
             self.tr('修改'),
-            FIF.PEOPLE,
-            self.tr("指定好友的支援角色（填写用户名，模糊匹配模式）"),
-            "borrow_character_from"
+            FIF.FLAG,
+            self.tr("支援列表"),
+            "borrow_friends"
         )
-        self.borrowCharacterInfoCard = PrimaryPushSettingCard(
-            self.tr('打开角色文件夹'),
-            FIF.INFO,
-            self.tr("↓↓支援角色↓↓"),
-            self.tr("角色对应的英文名字可以在 \"March7thAssistant\\assets\\images\\share\\character\" 中查看")
+        self.borrowScrollTimesCard = RangeSettingCard1(
+            "borrow_scroll_times",
+            [1, 10],
+            FIF.HISTORY,
+            self.tr("滚动查找次数"),
+            '',
         )
-        self.borrowCharacterCard = PushSettingCardEval(
-            self.tr('修改'),
-            FIF.ARROW_DOWN,
-            self.tr("支援角色优先级（从高到低）"),
-            "borrow_character"
-        )
+        # self.borrowCharacterFromCard = PushSettingCardEval(
+        #     self.tr('修改'),
+        #     FIF.PEOPLE,
+        #     self.tr("指定好友的支援角色（填写用户名，模糊匹配模式）"),
+        #     "borrow_character_from"
+        # )
+        # self.borrowCharacterInfoCard = PrimaryPushSettingCard(
+        #     self.tr('打开角色文件夹'),
+        #     FIF.INFO,
+        #     self.tr("↓↓支援角色↓↓"),
+        #     self.tr("角色对应的英文名字可以在 \"March7thAssistant\\assets\\images\\share\\character\" 中查看")
+        # )
+        # self.borrowCharacterCard = PushSettingCardEval(
+        #     self.tr('修改'),
+        #     FIF.ARROW_DOWN,
+        #     self.tr("支援角色优先级（从高到低）"),
+        #     "borrow_character"
+        # )
 
         self.DailyGroup = SettingCardGroup(self.tr("日常设置"), self.scrollWidget)
         self.dispatchEnableCard = SwitchSettingCard1(
@@ -210,7 +224,7 @@ class SettingInterface(ScrollArea):
         self.activityDailyCheckInEnableCard = SwitchSettingCard1(
             FIF.COMPLETED,
             self.tr('启用每日签到'),
-            "自动领取「星轨专票」或「星琼」，包含巡光之礼、巡星之礼和庆典祝礼活动",
+            "自动领取「星轨专票」或「星琼」，包含巡星之礼、巡光之礼和庆典祝礼活动",
             "activity_dailycheckin_enable"
         )
         self.activityGardenOfPlentyEnableCard = SwitchSettingCardGardenofplenty(
@@ -302,29 +316,25 @@ class SettingInterface(ScrollArea):
             "",
             "universe_enable"
         )
-        fates = {}
-        for a in ["不配置", "存护", "记忆", "虚无", "丰饶", "巡猎", "毁灭", "欢愉", "繁育", "智识"]:
-            fates[a] = a
-        self.universeFateCard = ComboBoxSettingCard2(
-            "universe_fate",
-            FIF.PIE_SINGLE,
-            self.tr('命途'),
-            '',
-            texts=fates
-        )
-        self.universeDifficultyCard = RangeSettingCard1(
-            "universe_difficulty",
-            [0, 5],
-            FIF.HISTORY,
-            self.tr("难度 (0为不配置)"),
-            self.tr(""),
-        )
         self.universeOperationModeCard = ComboBoxSettingCard2(
             "universe_operation_mode",
             FIF.COMMAND_PROMPT,
             self.tr('运行模式'),
             '',
             texts={'集成': 'exe', '源码': 'source'}
+        )
+        self.universeCategoryCard = ComboBoxSettingCard2(
+            "universe_category",
+            FIF.COMMAND_PROMPT,
+            self.tr('类别'),
+            '',
+            texts={'差分宇宙': 'divergent', '模拟宇宙': 'universe'}
+        )
+        self.universeDisableGpuCard = SwitchSettingCard1(
+            FIF.COMMAND_PROMPT,
+            self.tr('禁用GPU加速'),
+            self.tr('差分宇宙无法正常运行时，可尝试打开此选项'),
+            "universe_disable_gpu"
         )
         self.universeTimeoutCard = RangeSettingCard1(
             "universe_timeout",
@@ -359,8 +369,25 @@ class SettingInterface(ScrollArea):
             self.tr("运行次数"),
             self.tr("注意中途停止不会计数，0 代表不指定，使用模拟宇宙原版逻辑"),
         )
+        fates = {}
+        for a in ["不配置", "存护", "记忆", "虚无", "丰饶", "巡猎", "毁灭", "欢愉", "繁育", "智识"]:
+            fates[a] = a
+        self.universeFateCard = ComboBoxSettingCard2(
+            "universe_fate",
+            FIF.PIE_SINGLE,
+            self.tr('命途（仅模拟宇宙生效）'),
+            '',
+            texts=fates
+        )
+        self.universeDifficultyCard = RangeSettingCard1(
+            "universe_difficulty",
+            [0, 5],
+            FIF.HISTORY,
+            self.tr("难度 (0为不配置，仅模拟宇宙生效)"),
+            self.tr(""),
+        )
 
-        self.ForgottenhallGroup = SettingCardGroup(self.tr("忘却之庭"), self.scrollWidget)
+        self.ForgottenhallGroup = SettingCardGroup(self.tr("混沌回忆"), self.scrollWidget)
         self.forgottenhallEnableCard = SwitchSettingCard1(
             FIF.SPEED_HIGH,
             self.tr('启用混沌回忆'),
@@ -438,12 +465,18 @@ class SettingInterface(ScrollArea):
             "",
             texts={'简洁': 'INFO', '详细': 'DEBUG'}
         )
-        self.importConfigCard = PushSettingCard(
-            self.tr('导入'),
-            FIF.ADD_TO,
-            self.tr('导入配置'),
-            self.tr('选择需要导入的 config.yaml 文件（重启后生效）')
+        self.gamePathCard = PushSettingCard(
+            self.tr('修改'),
+            FIF.GAME,
+            self.tr("游戏路径"),
+            cfg.game_path
         )
+        # self.importConfigCard = PushSettingCard(
+        #     self.tr('导入'),
+        #     FIF.ADD_TO,
+        #     self.tr('导入配置'),
+        #     self.tr('选择需要导入的 config.yaml 文件（重启后生效）')
+        # )
         self.checkUpdateCard = SwitchSettingCard1(
             FIF.SYNC,
             self.tr('启动时检测更新'),
@@ -454,9 +487,21 @@ class SettingInterface(ScrollArea):
             "after_finish",
             FIF.POWER_BUTTON,
             self.tr('任务完成后'),
-            self.tr('其中“退出”指退出游戏，“循环”指根据开拓力7×24小时无人值守循环运行程序（仅限完整运行生效）'),
+            self.tr('其中“退出”指退出游戏，“循环”指7×24小时无人值守循环运行程序（仅限完整运行生效）'),
             texts={'无': 'None', '退出': 'Exit', '循环': 'Loop',
-                   '关机': 'Shutdown', '休眠': 'Hibernate', '睡眠': 'Sleep', '注销': 'Logoff'}
+                   '关机': 'Shutdown', '睡眠': 'Sleep', '休眠': 'Hibernate', '重启': 'Restart', '注销': 'Logoff'}
+        )
+        self.loopModeCard = ComboBoxSettingCard2(
+            "loop_mode",
+            FIF.COMMAND_PROMPT,
+            self.tr('循环模式'),
+            '',
+            texts={'根据开拓力': 'power', '定时任务': 'scheduled'}
+        )
+        self.scheduledCard = TimePickerSettingCard1(
+            "scheduled_time",
+            FIF.DATE_TIME,
+            "定时任务时间",
         )
         self.playAudioCard = SwitchSettingCard1(
             FIF.ALBUM,
@@ -478,12 +523,6 @@ class SettingInterface(ScrollArea):
             FIF.DATE_TIME,
             self.tr("游戏刷新时间"),
             self.tr("用于循环运行及判断任务状态，默认凌晨四点"),
-        )
-        self.gamePathCard = PushSettingCard(
-            self.tr('修改'),
-            FIF.GAME,
-            self.tr("游戏路径"),
-            cfg.game_path
         )
 
         self.NotifyGroup = SettingCardGroup(self.tr("消息推送"), self.scrollWidget)
@@ -510,7 +549,7 @@ class SettingInterface(ScrollArea):
         self.autoBattleDetectEnableCard = SwitchSettingCard1(
             FIF.ROBOT,
             self.tr('启用自动战斗检测'),
-            "只对清体力和忘却之庭场景生效",
+            "只对清体力和逐光捡金场景生效",
             "auto_battle_detect_enable"
         )
         self.autoSetResolutionEnableCard = SwitchSettingCard1(
@@ -528,8 +567,13 @@ class SettingInterface(ScrollArea):
         self.keybindingTechniqueCard = PushSettingCardKey(
             self.tr('按住以修改'),
             FIF.LEAF,
-            self.tr("秘技（只对清体力和忘却之庭场景生效）"),
+            self.tr("秘技（只对清体力和逐光捡金场景生效）"),
             "hotkey_technique"
+        )
+        self.StartMarch7thAssistantCard = StartMarch7thAssistantSwitchSettingCard(
+            FIF.GAME,
+            self.tr('在用户登录时启动'),
+            "用于开机后自动执行完整运行模式"
         )
 
         self.AboutGroup = SettingCardGroup(self.tr('关于'), self.scrollWidget)
@@ -578,7 +622,7 @@ class SettingInterface(ScrollArea):
         self.vBoxLayout.setContentsMargins(36, 0, 36, 0)
 
         self.PowerGroup.addSettingCard(self.instanceTypeCard)
-        self.PowerGroup.addSettingCard(self.calyxGoldenPreferenceCard)
+        # self.PowerGroup.addSettingCard(self.calyxGoldenPreferenceCard)
         self.PowerGroup.addSettingCard(self.instanceNameCard)
         self.PowerGroup.addSettingCard(self.breakDownLevelFourRelicsetEnableCard)
         self.PowerGroup.addSettingCard(self.instanceTeamEnableCard)
@@ -591,9 +635,11 @@ class SettingInterface(ScrollArea):
 
         self.BorrowGroup.addSettingCard(self.borrowEnableCard)
         self.BorrowGroup.addSettingCard(self.borrowCharacterEnableCard)
-        self.BorrowGroup.addSettingCard(self.borrowCharacterFromCard)
-        self.BorrowGroup.addSettingCard(self.borrowCharacterInfoCard)
-        self.BorrowGroup.addSettingCard(self.borrowCharacterCard)
+        self.BorrowGroup.addSettingCard(self.borrowFriendsCard)
+        self.BorrowGroup.addSettingCard(self.borrowScrollTimesCard)
+        # self.BorrowGroup.addSettingCard(self.borrowCharacterFromCard)
+        # self.BorrowGroup.addSettingCard(self.borrowCharacterInfoCard)
+        # self.BorrowGroup.addSettingCard(self.borrowCharacterCard)
 
         self.DailyGroup.addSettingCard(self.dispatchEnableCard)
         self.DailyGroup.addSettingCard(self.mailEnableCard)
@@ -621,14 +667,16 @@ class SettingInterface(ScrollArea):
         self.FightGroup.addSettingCard(self.fightMainMapCard)
 
         self.UniverseGroup.addSettingCard(self.universeEnableCard)
-        self.UniverseGroup.addSettingCard(self.universeFateCard)
-        self.UniverseGroup.addSettingCard(self.universeDifficultyCard)
         self.UniverseGroup.addSettingCard(self.universeOperationModeCard)
+        self.UniverseGroup.addSettingCard(self.universeCategoryCard)
+        self.UniverseGroup.addSettingCard(self.universeDisableGpuCard)
         self.UniverseGroup.addSettingCard(self.universeTimeoutCard)
         self.UniverseGroup.addSettingCard(self.universeBonusEnableCard)
         self.UniverseGroup.addSettingCard(self.universeFrequencyCard)
         self.UniverseGroup.addSettingCard(self.universeCountCard)
         self.UniverseGroup.addSettingCard(self.universeRunTimeCard)
+        self.UniverseGroup.addSettingCard(self.universeFateCard)
+        self.UniverseGroup.addSettingCard(self.universeDifficultyCard)
 
         self.ForgottenhallGroup.addSettingCard(self.forgottenhallEnableCard)
         self.ForgottenhallGroup.addSettingCard(self.forgottenhallLevelCard)
@@ -644,13 +692,15 @@ class SettingInterface(ScrollArea):
         self.PureFictionGroup.addSettingCard(self.purefictionRunTimeCard)
 
         self.ProgramGroup.addSettingCard(self.logLevelCard)
-        self.ProgramGroup.addSettingCard(self.importConfigCard)
+        self.ProgramGroup.addSettingCard(self.gamePathCard)
+        # self.ProgramGroup.addSettingCard(self.importConfigCard)
         self.ProgramGroup.addSettingCard(self.checkUpdateCard)
         self.ProgramGroup.addSettingCard(self.afterFinishCard)
+        self.ProgramGroup.addSettingCard(self.loopModeCard)
+        self.ProgramGroup.addSettingCard(self.scheduledCard)
         self.ProgramGroup.addSettingCard(self.playAudioCard)
         self.ProgramGroup.addSettingCard(self.powerLimitCard)
         self.ProgramGroup.addSettingCard(self.refreshHourEnableCard)
-        self.ProgramGroup.addSettingCard(self.gamePathCard)
 
         self.NotifyGroup.addSettingCard(self.testNotifyCard)
         self.NotifyGroup.addSettingCard(self.notifyTemplateCard)
@@ -660,6 +710,7 @@ class SettingInterface(ScrollArea):
         self.MiscGroup.addSettingCard(self.autoSetResolutionEnableCard)
         self.MiscGroup.addSettingCard(self.autoSetGamePathEnableCard)
         self.MiscGroup.addSettingCard(self.keybindingTechniqueCard)
+        self.MiscGroup.addSettingCard(self.StartMarch7thAssistantCard)
 
         self.AboutGroup.addSettingCard(self.githubCard)
         self.AboutGroup.addSettingCard(self.qqGroupCard)
@@ -674,7 +725,7 @@ class SettingInterface(ScrollArea):
         self.addSubInterface(self.ActivityGroup, 'ActivityInterface', self.tr('活动'))
         self.addSubInterface(self.FightGroup, 'FightInterface', self.tr('锄大地'))
         self.addSubInterface(self.UniverseGroup, 'UniverseInterface', self.tr('宇宙'))
-        self.addSubInterface(self.ForgottenhallGroup, 'ForgottenhallInterface', self.tr('忘却'))
+        self.addSubInterface(self.ForgottenhallGroup, 'ForgottenhallInterface', self.tr('混沌'))
         self.addSubInterface(self.PureFictionGroup, 'PureFictionInterface', self.tr('虚构'))
 
         self.pivot.addItem(
@@ -698,10 +749,10 @@ class SettingInterface(ScrollArea):
         self.stackedWidget.setFixedHeight(self.stackedWidget.currentWidget().sizeHint().height())
 
     def __connectSignalToSlot(self):
-        self.importConfigCard.clicked.connect(self.__onImportConfigCardClicked)
+        # self.importConfigCard.clicked.connect(self.__onImportConfigCardClicked)
         self.gamePathCard.clicked.connect(self.__onGamePathCardClicked)
 
-        self.borrowCharacterInfoCard.clicked.connect(self.__openCharacterFolder())
+        # self.borrowCharacterInfoCard.clicked.connect(self.__openCharacterFolder())
 
         self.testNotifyCard.clicked.connect(lambda: start_task("notify"))
 
@@ -737,12 +788,12 @@ class SettingInterface(ScrollArea):
         self.verticalScrollBar().setValue(0)
         self.stackedWidget.setFixedHeight(self.stackedWidget.currentWidget().sizeHint().height())
 
-    def __onImportConfigCardClicked(self):
-        configdir, _ = QFileDialog.getOpenFileName(self, "选取配置文件", "./", "Config Files (*.yaml)")
-        if (configdir != ""):
-            cfg._load_config(configdir)
-            cfg.save_config()
-            self.__showRestartTooltip()
+    # def __onImportConfigCardClicked(self):
+    #     configdir, _ = QFileDialog.getOpenFileName(self, "选取配置文件", "./", "Config Files (*.yaml)")
+    #     if (configdir != ""):
+    #         cfg._load_config(configdir)
+    #         cfg.save_config()
+    #         self.__showRestartTooltip()
 
     def __onGamePathCardClicked(self):
         game_path, _ = QFileDialog.getOpenFileName(self, "选择游戏路径", "", "All Files (*)")
@@ -751,16 +802,16 @@ class SettingInterface(ScrollArea):
         cfg.set_value("game_path", game_path)
         self.gamePathCard.setContent(game_path)
 
-    def __openCharacterFolder(self):
-        return lambda: os.startfile(os.path.abspath("./assets/images/share/character"))
+    # def __openCharacterFolder(self):
+    #     return lambda: os.startfile(os.path.abspath("./assets/images/share/character"))
 
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
 
-    def __showRestartTooltip(self):
-        InfoBar.success(
-            self.tr('更新成功'),
-            self.tr('配置在重启软件后生效'),
-            duration=1500,
-            parent=self
-        )
+    # def __showRestartTooltip(self):
+    #     InfoBar.success(
+    #         self.tr('更新成功'),
+    #         self.tr('配置在重启软件后生效'),
+    #         duration=1500,
+    #         parent=self
+    #     )

@@ -2,7 +2,8 @@ from module.screen import screen
 from module.automation import auto
 from module.logger import log
 from module.config import cfg
-from tasks.power.instance import Instance
+from tasks.power.instance import Instance, CalyxInstance
+from tasks.weekly.universe import Universe
 import time
 
 
@@ -19,11 +20,13 @@ class Power:
 
         log.hr("开始清体力", 0)
 
-        power = Power.get()
-
-        if "拟造花萼" in instance_type:
-            Power.process_calyx(instance_type, instance_name, power)
+        if "饰品提取" in instance_type:
+            power = Power.get()
+            Power.process_ornament(instance_type, instance_name, power)
+        elif "拟造花萼" in instance_type:
+            Power.process_calyx(instance_type, instance_name)
         else:
+            power = Power.get()
             Power.process_standard(instance_type, instance_name, power)
 
         log.hr("完成", 2)
@@ -35,19 +38,70 @@ class Power:
             Power.merge("immersifier")
 
     @staticmethod
-    def process_calyx(instance_type, instance_name, power):
-        instance_power_max = 60
+    def process_ornament(instance_type, instance_name, power):
+        full_runs = power // 40
+
+        screen.change_to('guide3')
+        instance_type_crop = (262.0 / 1920, 289.0 / 1080, 422.0 / 1920, 624.0 / 1080)
+
+        if "饰品提取" in instance_type:
+            auto.click_element(instance_type, "text", crop=instance_type_crop)
+            # 等待界面完全停止
+            time.sleep(1)
+
+            # 需要判断是否有可用存档
+            if auto.find_element("无可用存档", "text", crop=(688.0 / 1920, 289.0 / 1080, 972.0 / 1920, 369.0 / 1080), include=True):
+                # 刷差分宇宙存档
+                if Universe.start(nums=1, save=False, category="divergent"):
+                    # 验证存档
+                    screen.change_to('guide3')
+                    auto.click_element(instance_type, "text", crop=instance_type_crop)
+                    # 等待界面完全停止
+                    time.sleep(1)
+                    if auto.find_element("无可用存档", "text", crop=(688.0 / 1920, 289.0 / 1080, 972.0 / 1920, 369.0 / 1080), include=True):
+                        log.error("暂无可用存档")
+                        return
+                else:
+                    return
+
+        screen.change_to("guide3")
+
+        immersifier_crop = (1623.0 / 1920, 40.0 / 1080, 162.0 / 1920, 52.0 / 1080)
+        text = auto.get_single_line_text(crop=immersifier_crop, blacklist=[
+            '+', '米'], max_retries=3)
+        if "/8" not in text:
+            log.error("沉浸器数量识别失败")
+            return
+
+        immersifier_count = int(text.split("/")[0])
+        log.info(f"🟣沉浸器: {immersifier_count}/8")
+
+        if immersifier_count + full_runs > 0:
+            Instance.run(instance_type, instance_name, 40, immersifier_count + full_runs)
+
+    @staticmethod
+    def process_calyx(instance_type, instance_name):
         instance_power_min = 10
+        instance_power_max = 60
+        while True:
+            power = Power.get()
 
-        full_runs = power // instance_power_max
-        if full_runs:
-            Instance.run(instance_type, instance_name, instance_power_max, full_runs)
+            if power < instance_power_min:
+                log.info(f"🟣开拓力 < {instance_power_min}")
+                break
 
-        partial_run_power = power % instance_power_max
-        if partial_run_power >= instance_power_min:
-            Instance.run(instance_type, instance_name, partial_run_power, 1)
-        elif full_runs == 0:
-            log.info(f"🟣开拓力 < {instance_power_max}")
+            full_runs = power // instance_power_max
+            if full_runs >= 1:
+                result = CalyxInstance.run(instance_type, instance_name, instance_power_max, full_runs)
+                if result == "Failed":
+                    continue
+
+            remain_runs = (power % instance_power_max) // instance_power_min
+            if remain_runs >= 1:
+                result = CalyxInstance.run(instance_type, instance_name, remain_runs * instance_power_min, 1)
+                if result == "Failed":
+                    continue
+            break
 
     @staticmethod
     def process_standard(instance_type, instance_name, power):
@@ -64,20 +118,22 @@ class Power:
         else:
             log.info(f"🟣开拓力 < {instance_power}")
 
-    @staticmethod
-    def customize_run(instance_type, instance_name, power_need, runs):
-        if not Instance.validate_instance(instance_type, instance_name):
-            return False
+    # @staticmethod
+    # def customize_run(instance_type, instance_name, power_need, runs):
+    #     if not Instance.validate_instance(instance_type, instance_name):
+    #         return False
 
-        log.hr(f"准备{instance_type}", 2)
+    #     log.hr(f"准备{instance_type}", 2)
 
-        power = Power.get()
+    #     power = Power.get()
 
-        if power < power_need * runs:
-            log.info(f"🟣开拓力 < {power_need}*{runs}")
-            return False
-        else:
-            return Instance.run(instance_type, instance_name, power_need, runs)
+    #     if power < power_need * runs:
+    #         log.info(f"🟣开拓力 < {power_need}*{runs}")
+    #         return False
+    #     elif "拟造花萼" in instance_type:
+    #         return CalyxInstance.run(instance_type, instance_name, power_need * runs)
+    #     else:
+    #         return Instance.run(instance_type, instance_name, power_need, runs)
 
     @staticmethod
     def get():
@@ -144,11 +200,16 @@ class Power:
         return trailblaze_power
 
     @staticmethod
-    def merge(type):
+    def merge(type, cnt=0):
         if type == "immersifier":
             log.hr("准备合成沉浸器", 2)
             screen.change_to("menu")
-            limit = int(cfg.merge_immersifier_limit)
+
+            if cnt == 0:
+                limit = int(cfg.merge_immersifier_limit)
+            else:
+                limit = cnt
+
             screen.change_to("guide3")
 
             immersifier_crop = (1623.0 / 1920, 40.0 / 1080, 162.0 / 1920, 52.0 / 1080)

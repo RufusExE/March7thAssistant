@@ -19,9 +19,11 @@ class WarpInterface(ScrollArea):
         self.titleLabel = QLabel(self.tr("抽卡记录"), self)
 
         self.updateBtn = PrimaryPushButton(FIF.SYNC, "更新数据", self)
+        self.updateFullBtn = PushButton(FIF.SYNC, "更新完整数据", self)
         self.importBtn = PushButton(FIF.PENCIL_INK, "导入数据", self)
         self.exportBtn = PushButton(FIF.SAVE_COPY, "导出数据", self)
         self.copyLinkBtn = PushButton(FIF.SHARE, "复制链接", self)
+        self.clearBtn = PushButton(FIF.DELETE, "清空", self)
         self.warplink = None
 
         self.stateTooltip = None
@@ -38,10 +40,12 @@ class WarpInterface(ScrollArea):
     def __initWidget(self):
         self.titleLabel.move(36, 30)
         self.updateBtn.move(35, 80)
-        self.importBtn.move(150, 80)
-        self.exportBtn.move(265, 80)
-        self.copyLinkBtn.move(380, 80)
+        self.updateFullBtn.move(150, 80)
+        self.importBtn.move(293, 80)
+        self.exportBtn.move(408, 80)
+        self.copyLinkBtn.move(523, 80)
         self.copyLinkBtn.setEnabled(False)
+        self.clearBtn.move(638, 80)
 
         self.view.setObjectName('view')
         self.setViewportMargins(0, 120, 0, 20)
@@ -66,12 +70,17 @@ class WarpInterface(ScrollArea):
 
     def __connectSignalToSlot(self):
         self.updateBtn.clicked.connect(self.__onUpdateBtnClicked)
+        self.updateFullBtn.clicked.connect(self.__onUpdateFullBtnClicked)
         self.importBtn.clicked.connect(self.__onImportBtnClicked)
         self.exportBtn.clicked.connect(self.__onExportBtnClicked)
         self.copyLinkBtn.clicked.connect(self.__onCopyLinkBtnClicked)
+        self.clearBtn.clicked.connect(self.__onClearBtnClicked)
 
     def __onUpdateBtnClicked(self):
         warpExport(self)
+
+    def __onUpdateFullBtnClicked(self):
+        warpExport(self, "full")
 
     def __onImportBtnClicked(self):
         try:
@@ -166,15 +175,45 @@ class WarpInterface(ScrollArea):
                 parent=self
             )
 
+    def __onClearBtnClicked(self):
+        try:
+            os.remove("./warp.json")
+            self.setContent()
+            InfoBar.success(
+                title=self.tr('清空完成(＾∀＾●)'),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=1000,
+                parent=self
+            )
+        except Exception as e:
+            print(e)
+            InfoBar.warning(
+                title=self.tr('清空失败(╥╯﹏╰╥)'),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=1000,
+                parent=self
+            )
+
     def setContent(self):
         try:
             with open("./warp.json", 'r', encoding='utf-8') as file:
                 config = json.load(file)
+
             warp = WarpExport(config)
             if qconfig.theme.name == "DARK":
                 content = warp.data_to_html("dark")
             else:
                 content = warp.data_to_html("light")
+            self.clearBtn.setEnabled(True)
+            self.exportBtn.setEnabled(True)
         except Exception as e:
             content = "抽卡记录为空，请先打开游戏内抽卡记录，再点击更新数据即可。\n\n你也可以从其他支持 SRGF 数据格式的应用导入数据，例如 StarRail Warp Export 或 Starward 等。\n\n复制链接功能可用于小程序或其他软件。"
+            self.clearBtn.setEnabled(False)
+            self.exportBtn.setEnabled(False)
         self.contentLabel.setText(content)
